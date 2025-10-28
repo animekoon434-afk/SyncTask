@@ -1,26 +1,32 @@
 import express from 'express';
-const app = express();
 import connectDB from './connectDb.js';
 import dotenv from 'dotenv';
 import todoRouter from './routes/todo-routes.js'
+import path from 'path';
 
 dotenv.config();
 
+const app = express();
+
 app.use(express.json());
 
+const __dirname = path.resolve();
 
-app.get('/', (req, res) => {
-    res.status(200).send('Hello World');
-});
+const PORT = process.env.PORT;
 
 app.use('/api', todoRouter);
 
 connectDB();
 
-const PORT = process.env.PORT;
+if(process.env.NODE_ENV === "production"){
+    app.use(express.static(path.join(__dirname, "../frontend/dist")))
+
+    app.get(/.*/, (_,res) => {
+        res.sendFile(path.join(__dirname, "../frontend", "dist","index.html"))
+    })
+}
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-console.log('Express server setup complete.');
