@@ -3,12 +3,18 @@ import connectDB from './connectDb.js';
 import dotenv from 'dotenv';
 import todoRouter from './routes/todo-routes.js'
 import path from 'path';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
+
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST", "PATCH", "DELETE"]
+}))
 
 const __dirname = path.resolve();
 

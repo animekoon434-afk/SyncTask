@@ -1,4 +1,7 @@
 @import 'tailwindcss';
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-
+.text-outline{
+    color: white;
+    -webkit-text-stroke: 1px #6e11b0; 
+}
