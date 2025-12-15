@@ -1,64 +1,111 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-const UpdateForm = ({show, onClose}) => {
-    if(!show) return null;
-  return (
-    <div
-            className='fixed inset-0 bg-black/50 flex justify-center items-center z-50'
+const UpdateForm = ({ show, onClose, task, onUpdate }) => {
+    const [title, setTitle] = useState(task?.title || '');
+    const [priority, setPriority] = useState(task?.priority || 'medium');
+    const [status, setStatus] = useState(task?.status || 'pending');
+
+    if (!show) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const updatedData = { title, priority, status };
+        await onUpdate(task._id, updatedData);
+        onClose();
+    }
+
+    return (
+        <div
+            className='fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50'
+            onClick={onClose}
         >
             <div
-                className='flex flex-col justify-between shadow-2xl bg-[#e8e3fa] border border-purple-800 w-[30%] h-[40%] p-6 rounded-lg relative'
+                className='flex flex-col bg-white w-[90%] max-w-md rounded-xl shadow-xl overflow-hidden'
+                onClick={(e) => e.stopPropagation()}
             >
-                <div>
-                    <div className='flex justify-center mb-5 items-center'>
-                        <h1 className='text-white font-bold text-3xl drop-shadow-[2px_2px_0px_#9333ea] text-outline'>Update Task</h1>
-                        <button
-                            className='absolute right-6 text-gray-700 font-bold text-xl hover:text-red-600'
-                        >
-                            ✕
-                        </button>
-                    </div>
+                {/* Header */}
+                <div className='flex justify-between items-center px-6 py-4 border-b border-gray-100'>
+                    <h2 className='text-xl font-semibold text-gray-800'>Edit Task</h2>
+                    <button
+                        onClick={onClose}
+                        className='text-gray-400 hover:text-gray-600 transition-colors p-1'
+                    >
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                        </svg>
+                    </button>
+                </div>
 
-                    <form>
+                {/* Form Content */}
+                <form className='px-6 py-6 space-y-5'>
+                    <div>
+                        <label className='block text-sm font-medium text-gray-700 mb-2'>
+                            Task Title
+                        </label>
                         <input
                             type="text"
-                            className='text-[20px] font-bold bg-[#f9f9f9] text-gray-600 focus:outline-gray-400 border border-purple-600 rounded-[5px] py-2 px-[15px] mb-10 w-full'
-                            placeholder='Enter Your Task'
-                            // value={title}
-                            // onChange={(e) => setTitle(e.target.value)}
+                            className='w-full px-4 py-3 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all'
+                            placeholder='Enter your task...'
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
                             required
                         />
-                        <div className='flex justify-between w-full'>
-                            <select 
-                                className='text-[20px] font-bold bg-purple-500 text-white border border-[#dfe3e6] rounded-[5px] py-2 px-[15px] w-[40%]'
-                                // value={priority}
-                                // onChange={(e) => setPriority(e.target.value)}
+                    </div>
+
+                    <div className='grid grid-cols-2 gap-4'>
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 mb-2'>
+                                Priority
+                            </label>
+                            <select
+                                className='w-full px-4 py-3 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer'
+                                value={priority}
+                                onChange={(e) => setPriority(e.target.value)}
                             >
-                                <option className='bg-purple-300' value='low'>Low</option>
-                                <option className='bg-purple-300' value='medium'>Medium</option>
-                                <option className='bg-purple-300' value='high'>High</option>
-                            </select>
-                            <select 
-                                className='text-[20px] font-bold bg-purple-500 text-white border border-[#dfe3e6] rounded-[5px] py-2 px-[15px] w-[40%]'
-                                // value={status}
-                                // onChange={(e) => setStatus(e.target.value)}
-                            >
-                                <option className='bg-purple-300' value='pending'>Pending</option>
-                                <option className='bg-purple-300' value='in progress'>In Progress</option>
-                                <option className='bg-purple-300' value='completed'>Completed</option>
+                                <option value='low'>Low</option>
+                                <option value='medium'>Medium</option>
+                                <option value='high'>High</option>
                             </select>
                         </div>
-                    </form>
+
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 mb-2'>
+                                Status
+                            </label>
+                            <select
+                                className='w-full px-4 py-3 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer'
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                            >
+                                <option value='pending'>Pending</option>
+                                <option value='in progress'>In Progress</option>
+                                <option value='completed'>Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                {/* Footer */}
+                <div className='px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3'>
+                    <button
+                        type='button'
+                        onClick={onClose}
+                        className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type='submit'
+                        onClick={handleSubmit}
+                        className='px-6 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors'
+                    >
+                        Update Task
+                    </button>
                 </div>
-                <button
-                    // onClick={handleSubmit}
-                    className='w-full bg-purple-600 py-2 text-white font-bold rounded-[5px]'
-                >
-                    Add Task
-                </button>
             </div>
         </div>
-  )
-}
+    );
+};
+
 
 export default UpdateForm
