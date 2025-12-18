@@ -1,4 +1,4 @@
-import mongoose  from "mongoose";
+import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -7,16 +7,30 @@ const todoSchema = new Schema({
         type: String,
         required: true,
     },
-    status:{
+    description: {
         type: String,
-        enum:  ['pending', 'in progress', 'completed'],
+        default: ''
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'in progress', 'completed'],
         default: 'pending'
     },
-    priority:{
+    priority: {
         type: String,
         enum: ['high', 'medium', 'low'],
         default: 'medium'
+    },
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
+        index: true
+    },
+    createdBy: {
+        type: String,
+        required: true
     }
-},{timestamps: true});
+}, { timestamps: true });
 
 export default mongoose.model('Todo', todoSchema);

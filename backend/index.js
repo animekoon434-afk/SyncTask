@@ -11,28 +11,29 @@ const app = express();
 
 app.use(express.json());
 
+// Allow all origins in development
 app.use(cors({
-    origin: process.env.CLIENT_URL,
-    methods: ["GET", "POST", "PATCH", "DELETE"]
+    origin: '*',
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id']
 }))
 
 const __dirname = path.resolve();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 app.use('/api', todoRouter);
 
 connectDB();
 
-if(process.env.NODE_ENV === "production"){
+if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../frontend/dist")))
 
-    app.get(/.*/, (_,res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist","index.html"))
+    app.get(/.*/, (_, res) => {
+        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"))
     })
 }
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-

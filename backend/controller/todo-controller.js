@@ -1,134 +1,220 @@
 import Todo from '../model/todo-model.js';
+import Project from '../model/project-model.js';
 
+// Helper to check project access
+const checkProjectAccess = async (projectId, userId) => {
+    const project = await Project.findOne({
+        _id: projectId,
+        $or: [
+            { ownerId: userId },
+            { 'collaborators.id': userId }
+        ]
+    });
+    return project;
+};
+
+// Get all tasks in a project
 export const getAllTasks = async (req, res) => {
-    try{
-        const tasks = await Todo.find();
+    try {
+        const userId = req.userId;
+        const { projectId } = req.query;
+
+        if (!projectId) {
+            return res.status(400).json({ message: 'Project ID is required' });
+        }
+
+        // Check access
+        const project = await checkProjectAccess(projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this project' });
+        }
+
+        const tasks = await Todo.find({ projectId }).sort({ createdAt: -1 });
+
         return res.status(200).json({
             success: true,
             data: tasks
-        })
-    }
-    catch(error){
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
-export const getSignleTasks = async (req,res) =>{
-    try{
-        const  id = req.params.id;
-        if(!id){
-            return res.status(400).json('Please provide a task id');
+// Get single task
+export const getSignleTasks = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const userId = req.userId;
+
+        if (!id) {
+            return res.status(400).json({ message: 'Please provide a task id' });
         }
+
         const task = await Todo.findById(id);
-        if(!task){
-            return res.status(404).json('Task not found');
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
         }
+
+        // Check project access
+        const project = await checkProjectAccess(task.projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this task' });
+        }
+
         return res.status(200).json({
             success: true,
             data: task
-        })
-    } catch(error){
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
-export const addTask = async (req,res) => {
-    try{
-        const {title, status, priority} = req.body;
+// Add task to project
+export const addTask = async (req, res) => {
+    try {
+        const { title, description, status, priority, projectId } = req.body;
+        const userId = req.userId;
 
-        if(!title){
-            return res.status(400).json('Please fill all the fiels')
+        if (!title) {
+            return res.status(400).json({ message: 'Please provide a task title' });
+        }
+
+        if (!projectId) {
+            return res.status(400).json({ message: 'Project ID is required' });
+        }
+
+        // Check access
+        const project = await checkProjectAccess(projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this project' });
         }
 
         const newTask = await Todo.create({
             title,
-            status,
-            priority
+            description: description || '',
+            status: status || 'pending',
+            priority: priority || 'medium',
+            projectId,
+            createdBy: userId
         });
 
         return res.status(201).json({
-            message: 'task added successfully',
+            success: true,
+            message: 'Task added successfully',
             data: newTask
-        
-        })
-    }
-    catch(error){
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
-
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Update task
 export const updateTask = async (req, res) => {
-    try{
-        const  id = req.params.id;
-        const {title, status, priority} = req.body;
-        if(!id){
-            return res.status(400).json('Please provide a task id');
-        }
-        if(!title){
-            return res.status(400).json('Please fill at least one field to update');
-        }
-        const updateTask = await Todo.findByIdAndUpdate(id , {
-            title,
-            status,
-            priority  
-        },{new: true});
+    try {
+        const id = req.params.id;
+        const userId = req.userId;
+        const { title, description, status, priority } = req.body;
 
-        if(!updateTask){
-            return res.status(404).json('Task not found');
+        if (!id) {
+            return res.status(400).json({ message: 'Please provide a task id' });
         }
+
+        const task = await Todo.findById(id);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Check project access
+        const project = await checkProjectAccess(task.projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this task' });
+        }
+
+        const updatedTask = await Todo.findByIdAndUpdate(
+            id,
+            { title, description, status, priority },
+            { new: true }
+        );
+
         return res.status(200).json({
             success: true,
-            message: 'Task  updated successfully',
-            data: updateTask
-        })
-    } catch(error){
+            message: 'Task updated successfully',
+            data: updatedTask
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Delete task
 export const deleteTask = async (req, res) => {
-     try{
-        const  id = req.params.id;
-        if(!id){
-            return res.status(400).json('Please provide a task id');
+    try {
+        const id = req.params.id;
+        const userId = req.userId;
+
+        if (!id) {
+            return res.status(400).json({ message: 'Please provide a task id' });
         }
-        const deleteTask = await Todo.findByIdAndDelete(id);
-        if(!deleteTask){
-            return res.status(404).json('Task not found');
+
+        const task = await Todo.findById(id);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
         }
+
+        // Check project access
+        const project = await checkProjectAccess(task.projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this task' });
+        }
+
+        await Todo.findByIdAndDelete(id);
+
         return res.status(200).json({
             success: true,
             message: 'Task deleted successfully'
-        })
-    } catch(error){
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Search tasks in a project
 export const getTasksBySearch = async (req, res) => {
-    try{
-        const {search} = req.query;
+    try {
+        const { search, projectId } = req.query;
+        const userId = req.userId;
 
-        if(!search){
-           return res.status(400).json('Please provide a task title')
+        if (!projectId) {
+            return res.status(400).json({ message: 'Project ID is required' });
         }
 
-        const filter = search ? {title: {$regex: search, $options: 'i'}} : {};
+        if (!search) {
+            return res.status(400).json({ message: 'Please provide a search term' });
+        }
 
-        const todo = await Todo.find(filter);
+        // Check access
+        const project = await checkProjectAccess(projectId, userId);
+        if (!project) {
+            return res.status(403).json({ message: 'You do not have access to this project' });
+        }
+
+        const tasks = await Todo.find({
+            projectId,
+            title: { $regex: search, $options: 'i' }
+        });
+
         return res.status(200).json({
             success: true,
-            data: todo
-        })
-    }
-    catch(error){
+            data: tasks
+        });
+    } catch (error) {
         console.log(error);
-        return res.status(500).json(error.message);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
