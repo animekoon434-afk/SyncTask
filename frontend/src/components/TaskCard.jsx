@@ -51,6 +51,36 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
           </div>
         )}
 
+        {/* Creator/Updater Info */}
+        {(task.createdByName || task.updatedByName) && (
+          <div className={`flex flex-col gap-1.5 mt-3 pt-3 border-t text-xs ${isDark ? 'border-gray-700 text-gray-400' : 'border-stone-100 text-stone-500'}`}>
+            {task.createdByName && (
+              <div className='flex items-center gap-2'>
+                {task.createdByImage ? (
+                  <img src={task.createdByImage} alt={task.createdByName} className='w-5 h-5 rounded-full object-cover' />
+                ) : (
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${isDark ? 'bg-purple-900 text-purple-300' : 'bg-purple-100 text-purple-600'}`}>
+                    {task.createdByName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span>Created by <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-stone-700'}`}>{task.createdByName}</span></span>
+              </div>
+            )}
+            {task.updatedByName && (
+              <div className='flex items-center gap-2'>
+                {task.updatedByImage ? (
+                  <img src={task.updatedByImage} alt={task.updatedByName} className='w-5 h-5 rounded-full object-cover' />
+                ) : (
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-600'}`}>
+                    {task.updatedByName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span>Updated by <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-stone-700'}`}>{task.updatedByName}</span></span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className='flex items-center justify-between mt-3'>
           <Priority name={priority} />
           <div

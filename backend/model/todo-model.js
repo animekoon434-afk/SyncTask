@@ -30,6 +30,26 @@ const todoSchema = new Schema({
     createdBy: {
         type: String,
         required: true
+    },
+    createdByName: {
+        type: String,
+        default: ''
+    },
+    createdByImage: {
+        type: String,
+        default: ''
+    },
+    updatedBy: {
+        type: String,
+        default: ''
+    },
+    updatedByName: {
+        type: String,
+        default: ''
+    },
+    updatedByImage: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 

@@ -96,7 +96,9 @@ const HomePage = () => {
         try {
             const result = await addTask({
                 ...newTask,
-                projectId: selectedProject._id
+                projectId: selectedProject._id,
+                createdByName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+                createdByImage: user?.imageUrl || ''
             });
             if (result) {
                 await loadTasks();
@@ -134,7 +136,12 @@ const HomePage = () => {
 
     const handleUpdateTask = async (taskId, updatedData) => {
         try {
-            await updateTask(taskId, updatedData);
+            await updateTask(taskId, {
+                ...updatedData,
+                updatedBy: user?.id,
+                updatedByName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+                updatedByImage: user?.imageUrl || ''
+            });
             await loadTasks();
         } catch (err) {
             const msg = err.response?.data?.message || 'Error updating task.';

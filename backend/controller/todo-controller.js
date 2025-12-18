@@ -75,7 +75,7 @@ export const getSignleTasks = async (req, res) => {
 // Add task to project
 export const addTask = async (req, res) => {
     try {
-        const { title, description, status, priority, projectId } = req.body;
+        const { title, description, status, priority, projectId, createdByName, createdByImage } = req.body;
         const userId = req.userId;
 
         if (!title) {
@@ -98,7 +98,9 @@ export const addTask = async (req, res) => {
             status: status || 'pending',
             priority: priority || 'medium',
             projectId,
-            createdBy: userId
+            createdBy: userId,
+            createdByName: createdByName || '',
+            createdByImage: createdByImage || ''
         });
 
         return res.status(201).json({
@@ -117,7 +119,7 @@ export const updateTask = async (req, res) => {
     try {
         const id = req.params.id;
         const userId = req.userId;
-        const { title, description, status, priority } = req.body;
+        const { title, description, status, priority, updatedBy, updatedByName, updatedByImage } = req.body;
 
         if (!id) {
             return res.status(400).json({ message: 'Please provide a task id' });
@@ -136,7 +138,15 @@ export const updateTask = async (req, res) => {
 
         const updatedTask = await Todo.findByIdAndUpdate(
             id,
-            { title, description, status, priority },
+            {
+                title,
+                description,
+                status,
+                priority,
+                updatedBy: updatedBy || userId,
+                updatedByName: updatedByName || '',
+                updatedByImage: updatedByImage || ''
+            },
             { new: true }
         );
 
