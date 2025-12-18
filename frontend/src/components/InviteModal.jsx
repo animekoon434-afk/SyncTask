@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useTheme } from '../context/useTheme'
-import { searchUsers, sendProjectInvite, sendInvitation } from '../utils/api'
+import { searchUsers, sendProjectInvite, sendInvitation, createInviteLink } from '../utils/api'
 
 const InviteModal = ({ show, onClose, project }) => {
     const [email, setEmail] = useState('');
@@ -9,6 +9,8 @@ const InviteModal = ({ show, onClose, project }) => {
     const [message, setMessage] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [mode, setMode] = useState('search');
+    const [inviteLink, setInviteLink] = useState('');
+    const [copied, setCopied] = useState(false);
     const { isDark } = useTheme();
     const { user } = useUser();
 
@@ -84,12 +86,45 @@ const InviteModal = ({ show, onClose, project }) => {
         }
     };
 
+    const handleGenerateLink = async () => {
+        if (!project) {
+            setMessage('No project selected');
+            return;
+        }
+
+        setStatus('generating');
+        setMessage('');
+        try {
+            const userName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+            const response = await createInviteLink(project._id, userName);
+            setInviteLink(response.data.inviteUrl);
+            setStatus('success');
+            setMessage('Invite link generated! Share it with others.');
+        } catch (error) {
+            setStatus('error');
+            const errorMsg = error.response?.data?.message || 'Failed to generate invite link';
+            setMessage(errorMsg);
+        }
+    };
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(inviteLink);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            setMessage('Failed to copy link');
+        }
+    };
+
     const handleClose = () => {
         setEmail('');
         setStatus('idle');
         setMessage('');
         setSearchResults([]);
         setMode('search');
+        setInviteLink('');
+        setCopied(false);
         onClose();
     };
 
@@ -155,11 +190,20 @@ const InviteModal = ({ show, onClose, project }) => {
                     >
                         Invite New
                     </button>
+                    <button
+                        onClick={() => setMode('link')}
+                        className={`flex-1 py-3 text-sm font-medium transition-colors ${mode === 'link'
+                            ? isDark ? 'text-purple-400 border-b-2 border-purple-400' : 'text-purple-600 border-b-2 border-purple-600'
+                            : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-stone-500 hover:text-stone-700'
+                            }`}
+                    >
+                        Invite via Link
+                    </button>
                 </div>
 
                 {/* Content */}
                 <div className={`px-6 py-5 max-h-[60vh] overflow-y-auto ${isDark ? '' : 'bg-white'}`}>
-                    {mode === 'search' ? (
+                    {mode === 'search' && (
                         <>
                             <p className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-stone-500'}`}>
                                 Search for users. They will receive an invite to join this project.
@@ -224,7 +268,9 @@ const InviteModal = ({ show, onClose, project }) => {
                                 </div>
                             )}
                         </>
-                    ) : (
+                    )}
+
+                    {mode === 'invite' && (
                         <>
                             <p className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-stone-500'}`}>
                                 Send an email invitation to someone who doesn't have an account yet.
@@ -240,6 +286,61 @@ const InviteModal = ({ show, onClose, project }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
+                        </>
+                    )}
+
+                    {mode === 'link' && (
+                        <>
+                            <p className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-stone-500'}`}>
+                                Generate a shareable link that anyone can use to join this project.
+                            </p>
+
+                            {!inviteLink ? (
+                                <button
+                                    onClick={handleGenerateLink}
+                                    disabled={status === 'generating'}
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed transition-colors ${isDark
+                                        ? 'border-slate-600 hover:border-purple-500 hover:bg-slate-700/50 text-slate-300'
+                                        : 'border-stone-300 hover:border-purple-500 hover:bg-purple-50 text-stone-600'
+                                        } disabled:opacity-50`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    {status === 'generating' ? 'Generating...' : 'Generate Invite Link'}
+                                </button>
+                            ) : (
+                                <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-slate-600' : 'bg-stone-50 border-stone-200'}`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                        <span className={`text-sm font-medium ${isDark ? 'text-gray-100' : 'text-stone-700'}`}>
+                                            Invite Link
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={inviteLink}
+                                            className={`flex-1 px-3 py-2 text-sm rounded-lg border ${isDark
+                                                ? 'bg-slate-800 border-slate-700 text-gray-300'
+                                                : 'bg-white border-stone-200 text-stone-600'
+                                                }`}
+                                        />
+                                        <button
+                                            onClick={handleCopyLink}
+                                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${copied
+                                                ? 'bg-emerald-600 text-white'
+                                                : 'bg-purple-600 text-white hover:bg-purple-700'
+                                                }`}
+                                        >
+                                            {copied ? 'Copied!' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
 

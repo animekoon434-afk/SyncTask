@@ -44,7 +44,7 @@ export const sendInvitation = async (req, res) => {
 
         const invitation = await clerkClient.invitations.createInvitation({
             emailAddress: email,
-            redirectUrl: process.env.FRONTEND_URL || 'http://localhost:5174',
+            redirectUrl: process.env.CLIENT_URL,
             publicMetadata: {
                 invitedBy: req.userId
             }

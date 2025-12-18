@@ -228,3 +228,35 @@ export const declineInvite = async (inviteId) => {
         throw error;
     }
 };
+
+// ============ INVITE LINK API ============
+
+export const createInviteLink = async (projectId, createdByName) => {
+    try {
+        const response = await apiClient.post('/invites/link', { projectId, createdByName });
+        return response.data;
+    } catch (error) {
+        console.error('Error creating invite link:', error);
+        throw error;
+    }
+};
+
+export const getInviteLinkInfo = async (token) => {
+    try {
+        const response = await apiClient.get(`/invites/link/${token}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error getting invite link info:', error);
+        throw error;
+    }
+};
+
+export const acceptInviteLink = async (token, userData) => {
+    try {
+        const response = await apiClient.post(`/invites/link/${token}/accept`, userData);
+        return response.data;
+    } catch (error) {
+        console.error('Error accepting invite link:', error);
+        throw error;
+    }
+};

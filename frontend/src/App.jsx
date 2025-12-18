@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import HomePage from './pages/HomePage'
+import JoinProject from './pages/JoinProject'
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
           </SignedOut>
         </>
       } />
+      <Route path="/join/:token" element={<JoinProject />} />
       <Route path="/" element={
         <>
           <SignedIn>

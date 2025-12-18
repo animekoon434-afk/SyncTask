@@ -1,12 +1,15 @@
 import express from 'express';
 import { getAllTasks, addTask, getSignleTasks, updateTask, deleteTask, getTasksBySearch } from '../controller/todo-controller.js';
 import { createProject, getProjects, getProject, updateProject, deleteProject, removeCollaborator, leaveProject } from '../controller/project-controller.js';
-import { sendProjectInvite, getPendingInvites, acceptInvite, declineInvite } from '../controller/project-invite-controller.js';
+import { sendProjectInvite, getPendingInvites, acceptInvite, declineInvite, createInviteLink, getInviteLinkInfo, acceptInviteLink } from '../controller/project-invite-controller.js';
 import { requireAuth, sendInvitation, searchUsers } from '../middleware/clerk-auth.js';
 
 const router = express.Router();
 
-// All routes require authentication
+// Public route - get invite link info (no auth required)
+router.get('/invites/link/:token', getInviteLinkInfo);
+
+// All routes below require authentication
 router.use(requireAuth);
 
 // Project routes
@@ -23,6 +26,10 @@ router.post('/invites', sendProjectInvite);
 router.get('/invites/pending', getPendingInvites);
 router.post('/invites/:inviteId/accept', acceptInvite);
 router.post('/invites/:inviteId/decline', declineInvite);
+
+// Invite link routes
+router.post('/invites/link', createInviteLink);
+router.post('/invites/link/:token/accept', acceptInviteLink);
 
 // Todo routes
 router.get('/todos', getAllTasks);
