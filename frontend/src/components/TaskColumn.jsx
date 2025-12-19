@@ -42,10 +42,10 @@ const TaskColumn = ({ title, img, tasks, onDelete, onUpdate }) => {
                     <button
                         onClick={() => setShowFilter(!showFilter)}
                         className={`flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg transition-colors ${priorityFilter !== 'all'
-                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                                : isDark
-                                    ? 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
-                                    : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
+                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                            : isDark
+                                ? 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                                : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
                             }`}
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,12 +70,12 @@ const TaskColumn = ({ title, img, tasks, onDelete, onUpdate }) => {
                                             setShowFilter(false);
                                         }}
                                         className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg transition-colors ${priorityFilter === option.value
-                                                ? isDark
-                                                    ? 'bg-purple-600 text-white'
-                                                    : 'bg-purple-600 text-white'
-                                                : isDark
-                                                    ? 'text-slate-300 hover:bg-slate-700'
-                                                    : 'text-stone-700 hover:bg-stone-100'
+                                            ? isDark
+                                                ? 'bg-purple-600 text-white'
+                                                : 'bg-purple-600 text-white'
+                                            : isDark
+                                                ? 'text-slate-300 hover:bg-slate-700'
+                                                : 'text-stone-700 hover:bg-stone-100'
                                             }`}
                                     >
                                         {option.label}
@@ -87,7 +87,7 @@ const TaskColumn = ({ title, img, tasks, onDelete, onUpdate }) => {
                 </div>
             </div>
 
-            <div className='max-h-[calc(100vh-320px)] overflow-y-auto scrollbar-thin pr-2 -mr-2'>
+            <div className='max-h-[calc(100vh-240px)] overflow-y-auto scrollbar-thin pr-2 -mr-2'>
                 {filteredTasks && filteredTasks.length > 0 ? (
                     filteredTasks.map((task) => <TaskCard key={task._id} task={task} onDelete={onDelete} onUpdate={onUpdate} />)
                 ) : (
